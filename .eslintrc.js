@@ -1,4 +1,3 @@
-// https://docs.expo.dev/guides/using-eslint/
 module.exports = {
   env: {
     browser: true,
@@ -12,8 +11,7 @@ module.exports = {
     'plugin:react/recommended',
     'plugin:react-native/all',
   ],
-  plugings: ['@typescript-eslint', 'react', 'prettier'],
-  parser: '@typescript-eslint/parser',
+  plugins: ['@typescript-eslint', 'react', 'prettier'],
   parserOptions: {
     ecmaVersion: 12,
     sourceType: 'module',
@@ -24,6 +22,12 @@ module.exports = {
   rules: {
     'react/prop-types': 'off',
     '@typescript-eslint/no-unused-vars': ['warn'],
+    '@typescript-eslint/explicit-module-boundary-types': 'off',
+    'react-native/no-inline-styles': 'off',
   },
-  settings: { react: { version: 'detect' } },
+  settings: {
+    react: {
+      version: 'detect',
+    },
+  },
 };

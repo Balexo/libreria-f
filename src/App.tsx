@@ -2,7 +2,7 @@ import React from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Pressable } from 'react-native';
 
-const App = () => {
+const App: React.FC = () => {
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
