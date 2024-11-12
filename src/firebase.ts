@@ -11,8 +11,5 @@ const firebaseConfig = {
   appId: Constants.expoConfig?.extra?.appId,
 };
 
-console.log('Firebase API Key:', Constants.expoConfig?.extra?.apiKey);
-console.log('Firebase Config:', firebaseConfig);
-
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);

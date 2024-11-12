@@ -5,7 +5,6 @@ import Constants from 'expo-constants';
 import './firebase';
 
 const App: React.FC = () => {
-  console.log('Firebase API Key:', Constants.expoConfig?.extra?.apiKey);
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
