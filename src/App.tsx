@@ -1,8 +1,11 @@
 import React from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Pressable } from 'react-native';
+import Constants from 'expo-constants';
+import './firebase';
 
 const App: React.FC = () => {
+  console.log('Firebase API Key:', Constants.expoConfig?.extra?.apiKey);
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
