@@ -1,26 +1,25 @@
 import React from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Pressable } from 'react-native';
-import Constants from 'expo-constants';
 import './firebase';
+import { StyleSheet } from 'react-native';
+import Register from './pages/auth/Resgister';
+import Login from './pages/auth/LoginUser';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+
+type RootStackParamList = {
+  Register: undefined;
+  Login: undefined;
+};
+const Stack = createStackNavigator<RootStackParamList>();
 
 const App: React.FC = () => {
   return (
-    <View style={styles.container}>
-      <StatusBar style="light" />
-      <Text style={{ color: 'white' }}>Funcionas branco?</Text>
-      <Pressable
-        onPress={() => alert('Ola')}
-        style={({ pressed }) => ({
-          backgroundColor: pressed ? 'red' : 'blue',
-          fontSize: pressed ? 32 : 16,
-          padding: 10,
-          borderRadius: 5,
-        })}
-      >
-        <Text style={{ color: 'white' }}>Pulsa aquí</Text>
-      </Pressable>
-    </View>
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen name="Register" component={Register} />
+        <Stack.Screen name="Login" component={Login} />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 };
 

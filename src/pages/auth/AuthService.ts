@@ -5,10 +5,14 @@ import {
   signOut,
   UserCredential,
 } from 'firebase/auth';
+import { getFirestore, setDoc, doc } from 'firebase/firestore';
+
+const db = getFirestore();
 
 export const registerUser = async (
   email: string,
   password: string,
+  uid?: string,
 ): Promise<UserCredential> => {
   try {
     const userCredential = await createUserWithEmailAndPassword(
@@ -16,6 +20,14 @@ export const registerUser = async (
       email,
       password,
     );
+
+    const user = userCredential.user;
+    await setDoc(doc(db, 'users', user.uid), {
+      uid: user.uid,
+      email: user.email,
+      createdAt: new Date(),
+    });
+
     return userCredential;
   } catch (error) {
     console.log('Error al registro de usuario', error);
@@ -23,7 +35,7 @@ export const registerUser = async (
   }
 };
 
-export const signupUser = async (
+export const loginUser = async (
   email: string,
   password: string,
 ): Promise<UserCredential> => {
@@ -48,34 +60,3 @@ export const logOut = async (): Promise<void> => {
     throw error;
   }
 };
-
-// import { client, setAuthorizationHeader, removeAuthorizationHeader } from "../../api/client";
-// import storage from "../../utils/storage";
-
-// export const login = async(email:string, password:string, requestStorage:boolean)=>{
-//     const credentials=  {email, password, requestStorage}
-
-//     return client
-//     .post("user/signup", credentials)
-//     .then({token, username, uid, updatedAt})=>{
-//         if(requestStorage){
-//             storage.set("authToken", token),
-//             storage.set("username", username),
-//             storage.set("uid", uid),
-//             storage.set("updatedAt", updatedAt)
-
-//         }else{
-//             sessionStorage.setItem("token", token)
-//         }
-
-//         if(token){
-//             return{
-//                 user:{
-//                     username: username,
-//                     uid: uid,
-//                     updatedAt: updatedAt,
-//                 }
-//             }
-//         }
-//     }
-// }
