@@ -26,6 +26,7 @@ const Login: React.FC = () => {
         placeholder="Password"
         value={password}
         onChangeText={setPassword}
+        secureTextEntry
       />
       <Button title="Iniciar sesión" onPress={handlePress} />
     </View>
