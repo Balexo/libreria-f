@@ -2,13 +2,19 @@ import { useEffect, useState } from "react";
 import { TextInput, View, Button, Text } from "react-native";
 import { registerUser } from "./AuthService";
 
+type MessageType = "success" | "error";
+
+interface Message {
+  type: MessageType;
+  text: string;
+}
+
 const Register: React.FC = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [repeatPassword, setRepeatPassword] = useState<string>("");
   const [registerDisabled, setRegisterDisabled] = useState(true);
-  const [validationErrors, setValidationErrors] = useState<string[]>([]);
-  const [successRegistration, setSuccesRegistration] = useState<string>("");
+  const [messages, setMessages] = useState<Message[]>([]);
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -17,35 +23,42 @@ const Register: React.FC = () => {
 
   const validatePassword = (password: string): boolean => {
     const passwordRegex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[ !"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~])[A-Za-z\d !"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]{8,}$/;
     return passwordRegex.test(password);
   };
 
   const validateFields = (): boolean => {
-    const errors: string[] = [];
+    setMessages([]);
+
+    const newMessages: Message[] = [];
 
     if (!validateEmail(email)) {
-      errors.push(
-        "El email no tiene un formato válido. Un formato válido es usuario@email.com",
-      );
+      newMessages.push({
+        type: "error",
+        text: "El email no tiene un formato válido. Un formato válido es usuario@email.com",
+      });
     }
 
     if (!validatePassword(password)) {
-      errors.push(
-        "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un dígito y un carácter especial.",
-      );
+      newMessages.push({
+        type: "error",
+        text: "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un dígito y un carácter especial.",
+      });
     }
 
     if (password != repeatPassword) {
-      errors.push("Las contraseñas deben coincidir");
+      newMessages.push({
+        type: "error",
+        text: "Las contraseñas deben coincidir",
+      });
     }
-    setValidationErrors(errors);
+    setMessages(newMessages);
 
-    return errors.length === 0;
+    return newMessages.length === 0;
   };
 
   const handleRegister = async (): Promise<void> => {
-    setValidationErrors([]);
+    setMessages([]);
 
     if (!validateFields()) {
       return;
@@ -53,14 +66,19 @@ const Register: React.FC = () => {
 
     try {
       await registerUser(email, password);
-      setSuccesRegistration("Usuario registrado correctamente");
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        {
+          type: "success",
+          text: "Usuario registrado correctamente",
+        },
+      ]);
     } catch (error) {
-      setValidationErrors(["Error al registrar el usuario"]);
+      setMessages((prevMesages) => [
+        ...prevMesages,
+        { type: "error", text: "Error al registrar el usuario" },
+      ]);
     }
-  };
-
-  const handlePress: () => void = () => {
-    handleRegister();
   };
 
   const checkFields = () => {
@@ -93,20 +111,18 @@ const Register: React.FC = () => {
       <Button
         title="Registro"
         disabled={registerDisabled}
-        onPress={handlePress}
+        onPress={handleRegister}
       />
-      {validationErrors.length > 0 && (
+      {messages.length > 0 && (
         <View style={{ marginTop: 20 }}>
-          {validationErrors.map((error, index) => (
-            <Text key={index} style={{ color: "red" }}>
-              {error}
+          {messages.map((message, index) => (
+            <Text
+              key={index}
+              style={{ color: message.type === "error" ? "red" : "green" }}
+            >
+              {message.text}
             </Text>
           ))}
-        </View>
-      )}
-      {successRegistration.length > 0 && (
-        <View style={{ marginTop: 20 }}>
-          <Text style={{ color: "green" }}>{successRegistration}</Text>
         </View>
       )}
     </View>

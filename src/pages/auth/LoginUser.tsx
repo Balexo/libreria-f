@@ -1,22 +1,42 @@
 import { useState } from "react";
 import { TextInput, View, Button } from "react-native";
-import { loginUser } from "./AuthService";
+import { loginUser, logOut } from "./AuthService";
+
+type MessageType = "success" | "error";
+
+interface Message {
+  type: MessageType;
+  text: string;
+}
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<Message[]>([]);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
   const handleSignup = async (): Promise<void> => {
     try {
       await loginUser(email, password);
+      setIsLoggedIn(true);
     } catch (error) {
-      setError("Error al registrarse el usuario");
+      setMessage((prevMessages) => [
+        ...prevMessages,
+        { type: "error", text: "Error al registrarse el usuario" },
+      ]);
     }
   };
 
-  const handlePress: () => void = () => {
-    handleSignup();
+  const handleSignout = async (): Promise<void> => {
+    try {
+      await logOut();
+      setIsLoggedIn(false);
+    } catch (error) {
+      setMessage((prevMessage) => [
+        ...prevMessage,
+        { type: "error", text: "Error al cerrar sesión" },
+      ]);
+    }
   };
 
   return (
@@ -28,7 +48,12 @@ const Login: React.FC = () => {
         onChangeText={setPassword}
         secureTextEntry
       />
-      <Button title="Iniciar sesión" onPress={handlePress} />
+      {isLoggedIn ? (
+        <Button title="Iniciar sesión" onPress={handleSignup} />
+      ) : (
+        <Button title="Cerrar sesión" onPress={handleSignout} />
+      )}
+      {message?.length > 0 && <View></View>}
     </View>
   );
 };
