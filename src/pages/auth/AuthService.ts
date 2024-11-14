@@ -1,19 +1,19 @@
-import { auth } from '../../firebase';
+import { auth } from "../../firebase";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
-  UserCredential,
-} from 'firebase/auth';
-import { getFirestore, setDoc, doc } from 'firebase/firestore';
+} from "firebase/auth";
+import { getFirestore, setDoc, doc } from "firebase/firestore";
+import { store } from "../../../store/store";
+import { login, logout } from "../../../store/authSlice";
 
 const db = getFirestore();
 
 export const registerUser = async (
   email: string,
   password: string,
-  uid?: string,
-): Promise<UserCredential> => {
+): Promise<void> => {
   try {
     const userCredential = await createUserWithEmailAndPassword(
       auth,
@@ -22,15 +22,18 @@ export const registerUser = async (
     );
 
     const user = userCredential.user;
-    await setDoc(doc(db, 'users', user.uid), {
+    await setDoc(doc(db, "users", user.uid), {
       uid: user.uid,
       email: user.email,
       createdAt: new Date(),
     });
 
-    return userCredential;
+    const token = await user.getIdToken();
+    store.dispatch(
+      login({ user: { email: user.email!, uid: user.uid }, token }),
+    );
   } catch (error) {
-    console.log('Error al registro de usuario', error);
+    console.log("Error al registro de usuario", error);
     throw error;
   }
 };
@@ -38,25 +41,31 @@ export const registerUser = async (
 export const loginUser = async (
   email: string,
   password: string,
-): Promise<UserCredential> => {
+): Promise<void> => {
   try {
     const userCredential = await signInWithEmailAndPassword(
       auth,
       email,
       password,
     );
-    return userCredential;
+    const user = userCredential.user;
+
+    const token = await user.getIdToken();
+    store.dispatch(
+      login({ user: { email: user.email!, uid: user.uid }, token }),
+    );
   } catch (error) {
-    console.log('Problemas al iniciar sesión', error);
+    console.log("Problemas al iniciar sesión", error);
     throw error;
   }
 };
 
 export const logOut = async (): Promise<void> => {
   try {
-    signOut(auth);
+    await signOut(auth);
+    store.dispatch(logout());
   } catch (error) {
-    console.log('Error al hacer sign out', error);
+    console.log("Error al hacer sign out", error);
     throw error;
   }
 };
