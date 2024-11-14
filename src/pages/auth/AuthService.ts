@@ -7,6 +7,7 @@ import {
 import { getFirestore, setDoc, doc } from "firebase/firestore";
 import { store } from "../../../store/store";
 import { login, logout } from "../../../store/authSlice";
+import { removeToken, saveToken } from "../../utils/storage";
 
 const db = getFirestore();
 
@@ -20,15 +21,17 @@ export const registerUser = async (
       email,
       password,
     );
-
     const user = userCredential.user;
+
+    const token = await user.getIdToken();
+    await saveToken(token);
+
     await setDoc(doc(db, "users", user.uid), {
       uid: user.uid,
       email: user.email,
       createdAt: new Date(),
     });
 
-    const token = await user.getIdToken();
     store.dispatch(
       login({ user: { email: user.email!, uid: user.uid }, token }),
     );
@@ -51,6 +54,8 @@ export const loginUser = async (
     const user = userCredential.user;
 
     const token = await user.getIdToken();
+    await saveToken(token);
+
     store.dispatch(
       login({ user: { email: user.email!, uid: user.uid }, token }),
     );
@@ -63,6 +68,8 @@ export const loginUser = async (
 export const logOut = async (): Promise<void> => {
   try {
     await signOut(auth);
+    await removeToken();
+
     store.dispatch(logout());
   } catch (error) {
     console.log("Error al hacer sign out", error);

@@ -48,7 +48,7 @@ const Login: React.FC = () => {
         onChangeText={setPassword}
         secureTextEntry
       />
-      {isLoggedIn ? (
+      {!isLoggedIn ? (
         <Button title="Iniciar sesión" onPress={handleSignup} />
       ) : (
         <Button title="Cerrar sesión" onPress={handleSignout} />
