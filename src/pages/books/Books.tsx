@@ -35,7 +35,7 @@ const Books: React.FC = () => {
       </View>
     );
   }
-  console.log("Books data:", books.data);
+
   return (
     <View style={styles.container}>
       {books?.length === 0 ? (

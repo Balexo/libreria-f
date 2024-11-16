@@ -1,6 +1,16 @@
 import { useState } from "react";
-import { TextInput, View, Button } from "react-native";
+import {
+  TextInput,
+  View,
+  Button,
+  TouchableOpacity,
+  StyleSheet,
+  Text,
+} from "react-native";
 import { loginUser, logOut } from "./AuthService";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { RootStackParamList } from "../../App";
+import { useNavigation } from "@react-navigation/native";
 
 type MessageType = "success" | "error";
 
@@ -9,11 +19,19 @@ interface Message {
   text: string;
 }
 
-const Login: React.FC = () => {
+type NavigationProp = StackNavigationProp<RootStackParamList, "Login">;
+
+interface Props {
+  navigation: NavigationProp;
+}
+
+const Login: React.FC<Props> = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [message, setMessage] = useState<Message[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+
+  const navigation = useNavigation<NavigationProp>();
 
   const handleSignup = async (): Promise<void> => {
     try {
@@ -40,14 +58,24 @@ const Login: React.FC = () => {
   };
 
   return (
-    <View>
-      <TextInput placeholder="Email" value={email} onChangeText={setEmail} />
+    <View style={styles.container}>
       <TextInput
+        style={styles.inputs}
+        placeholder="Email"
+        value={email}
+        onChangeText={setEmail}
+      />
+      <TextInput
+        style={styles.inputs}
         placeholder="Password"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
       />
+      <TouchableOpacity onPress={() => navigation.navigate("Register")}>
+        <Text style={styles.link}>Regístrate aquí</Text>
+      </TouchableOpacity>
+
       {!isLoggedIn ? (
         <Button title="Iniciar sesión" onPress={handleSignup} />
       ) : (
@@ -59,3 +87,18 @@ const Login: React.FC = () => {
 };
 
 export default Login;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  inputs: {
+    fontSize: 30,
+  },
+  link: {
+    fontSize: 18,
+    color: "blue",
+  },
+});
