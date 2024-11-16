@@ -8,6 +8,8 @@ import Books from "./pages/books/Books";
 import { QueryClient, QueryClientProvider } from "react-query";
 import Footer from "./pages/components/Footer";
 import Profile from "./pages/auth/Profile";
+import { Provider } from "react-redux";
+import { store } from "./store/store";
 
 export type RootStackParamList = {
   Books: undefined;
@@ -20,17 +22,19 @@ const Stack = createStackNavigator<RootStackParamList>();
 
 const App: React.FC = () => {
   return (
-    <NavigationContainer>
-      <QueryClientProvider client={queryClient}>
-        <Stack.Navigator initialRouteName="Books">
-          <Stack.Screen name="Books" component={Books} />
-          <Stack.Screen name="Register" component={Register} />
-          <Stack.Screen name="Login" component={Login} />
-          <Stack.Screen name="Profile" component={Profile} />
-        </Stack.Navigator>
-        <Footer />
-      </QueryClientProvider>
-    </NavigationContainer>
+    <Provider store={store}>
+      <NavigationContainer>
+        <QueryClientProvider client={queryClient}>
+          <Stack.Navigator initialRouteName="Books">
+            <Stack.Screen name="Books" component={Books} />
+            <Stack.Screen name="Register" component={Register} />
+            <Stack.Screen name="Login" component={Login} />
+            <Stack.Screen name="Profile" component={Profile} />
+          </Stack.Navigator>
+          <Footer />
+        </QueryClientProvider>
+      </NavigationContainer>
+    </Provider>
   );
 };
 

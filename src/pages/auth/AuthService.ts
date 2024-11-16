@@ -5,8 +5,8 @@ import {
   signOut,
 } from "firebase/auth";
 import { getFirestore, setDoc, doc } from "firebase/firestore";
-import { store } from "../../../store/store";
-import { login, logout } from "../../../store/authSlice";
+import { store } from "../../store/store";
+import { login, logout } from "../../store/authSlice";
 import { removeToken, saveToken } from "../../utils/storage";
 
 const db = getFirestore();

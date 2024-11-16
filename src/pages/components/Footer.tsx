@@ -2,11 +2,17 @@ import { Button, View, StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../../App";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store/store";
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
 const Footer: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
+
+  const isLogged = useSelector(
+    (state: RootState) => state.authState.isAuthenticated,
+  );
 
   return (
     <View style={styles.footer}>
@@ -14,10 +20,11 @@ const Footer: React.FC = () => {
         title="Inicio"
         onPress={() => navigation.navigate("Books")}
       ></Button>
-      <Button
-        title="Perfil"
-        onPress={() => navigation.navigate("Profile")}
-      ></Button>
+      {isLogged ? (
+        <Button title="Perfil" onPress={() => navigation.navigate("Profile")} />
+      ) : (
+        <Button title="Login" onPress={() => navigation.navigate("Login")} />
+      )}
     </View>
   );
 };
