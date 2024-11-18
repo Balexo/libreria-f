@@ -10,15 +10,13 @@ import {
 import { loginUser } from "./AuthService";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../../App";
-import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../../store/store";
+import { useNavigation } from "@react-navigation/native";
+import { useDispatch } from "react-redux";
 import { login } from "../../store/authSlice";
 import { Message } from "../../utils/types";
 import { checkFields } from "../../utils/validations";
 
 type NavigationProp = StackNavigationProp<RootStackParamList, "Login">;
-type RouteParams = RouteProp<RootStackParamList, keyof RootStackParamList>;
 
 interface Props {
   navigation: NavigationProp;
@@ -30,17 +28,11 @@ const Login: React.FC<Props> = () => {
   const [message, setMessage] = useState<Message[]>([]);
   const [LoginDisabled, SetLoginDisabled] = useState<boolean>(true);
 
-  const isLoggedIn = useSelector(
-    (state: RootState) => state.authState.isAuthenticated,
-  );
-
   const navigation = useNavigation<NavigationProp>();
-  const route = useRoute<RouteParams>();
   const dispatch = useDispatch();
 
   const handleSignup = async (): Promise<void> => {
     setMessage([]);
-    checkFields();
     try {
       const { token, uid, email: userEmail } = await loginUser(email, password);
       dispatch(login({ user: { email: userEmail, uid }, token }));

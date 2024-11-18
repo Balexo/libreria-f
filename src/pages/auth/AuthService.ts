@@ -1,6 +1,9 @@
 import { auth } from "../../firebase";
 import {
   createUserWithEmailAndPassword,
+  getIdTokenResult,
+  onAuthStateChanged,
+  signInWithCustomToken,
   signInWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
@@ -72,9 +75,10 @@ export const loginUser = async (
     }
     throw new CustomError("error", "Usuario no encontrado");
   } catch (error: any) {
-    console.log("Problemas al iniciar sesión", error);
     if (error.code === "auth/invalid-credential") {
       throw new CustomError("error", "Revise el correo y la contraseña");
+    } else if (error.code === "auth/invalid-email") {
+      throw new CustomError("error", "El formato del correo no es válido");
     } else {
       throw new CustomError(
         "error",
@@ -97,4 +101,24 @@ export const logOut = async (): Promise<void> => {
       "No se pudo cerrar la sesión. Inténtelo de nuevo",
     );
   }
+};
+
+export const getUserFromToken = async () => {
+  return new Promise<{ email: string; uid: string; token: string } | null>(
+    (resolve) => {
+      onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          const tokenResult = await getIdTokenResult(user);
+          console.log("tokenResult", tokenResult);
+          resolve({
+            email: user.email ?? "",
+            uid: user.uid,
+            token: tokenResult.token,
+          });
+        } else {
+          resolve(null);
+        }
+      });
+    },
+  );
 };

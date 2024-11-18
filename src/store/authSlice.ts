@@ -27,8 +27,18 @@ const authSlice = createSlice({
       state.user = null;
       state.isAuthenticated = false;
     },
+    setLoginFromStorage(
+      state,
+      action: PayloadAction<{
+        user: { email: string; uid: string };
+        token: string;
+      }>,
+    ) {
+      state.user = action.payload.user;
+      state.isAuthenticated = true;
+    },
   },
 });
 
-export const { login, logout } = authSlice.actions;
+export const { login, logout, setLoginFromStorage } = authSlice.actions;
 export default authSlice.reducer;
