@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   TextInput,
   View,
@@ -7,19 +7,18 @@ import {
   StyleSheet,
   Text,
 } from "react-native";
-import { loginUser, logOut } from "./AuthService";
+import { loginUser } from "./AuthService";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../../App";
-import { useNavigation } from "@react-navigation/native";
-
-type MessageType = "success" | "error";
-
-interface Message {
-  type: MessageType;
-  text: string;
-}
+import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../../store/store";
+import { login } from "../../store/authSlice";
+import { Message } from "../../utils/types";
+import { CustomError } from "../../utils/errors";
 
 type NavigationProp = StackNavigationProp<RootStackParamList, "Login">;
+type RouteParams = RouteProp<RootStackParamList, keyof RootStackParamList>;
 
 interface Props {
   navigation: NavigationProp;
@@ -29,33 +28,49 @@ const Login: React.FC<Props> = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [message, setMessage] = useState<Message[]>([]);
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [LoginDisabled, SetLoginDisabled] = useState<boolean>(true);
+
+  const isLoggedIn = useSelector(
+    (state: RootState) => state.authState.isAuthenticated,
+  );
 
   const navigation = useNavigation<NavigationProp>();
+  const route = useRoute<RouteParams>();
+  const dispatch = useDispatch();
+
+  const checkFields = () => {
+    if (email.trim() && password.trim()) {
+      SetLoginDisabled(false);
+    } else {
+      SetLoginDisabled(true);
+    }
+  };
 
   const handleSignup = async (): Promise<void> => {
+    setMessage([]);
+    checkFields();
     try {
-      await loginUser(email, password);
-      setIsLoggedIn(true);
-    } catch (error) {
-      setMessage((prevMessages) => [
-        ...prevMessages,
-        { type: "error", text: "Error al registrarse el usuario" },
-      ]);
+      const { token, uid, email: userEmail } = await loginUser(email, password);
+      dispatch(login({ user: { email: userEmail, uid }, token }));
+      navigation.navigate("Books");
+    } catch (error: any) {
+      if (error && error.message) {
+        setMessage((prevMessages) => [
+          ...prevMessages,
+          { type: "error", text: error.message },
+        ]);
+      } else {
+        setMessage((prevMessages) => [
+          ...prevMessages,
+          { type: "error", text: "Error al iniciar sesión" },
+        ]);
+      }
     }
   };
 
-  const handleSignout = async (): Promise<void> => {
-    try {
-      await logOut();
-      setIsLoggedIn(false);
-    } catch (error) {
-      setMessage((prevMessage) => [
-        ...prevMessage,
-        { type: "error", text: "Error al cerrar sesión" },
-      ]);
-    }
-  };
+  useEffect(() => {
+    checkFields();
+  }, [email, password]);
 
   return (
     <View style={styles.container}>
@@ -76,12 +91,24 @@ const Login: React.FC<Props> = () => {
         <Text style={styles.link}>Regístrate aquí</Text>
       </TouchableOpacity>
 
-      {!isLoggedIn ? (
-        <Button title="Iniciar sesión" onPress={handleSignup} />
-      ) : (
-        <Button title="Cerrar sesión" onPress={handleSignout} />
+      <Button
+        title="Iniciar sesión"
+        disabled={LoginDisabled}
+        onPress={handleSignup}
+      />
+
+      {message?.length > 0 && (
+        <View>
+          {message.map((item, index) => (
+            <Text
+              key={index}
+              style={{ color: item.type === "error" ? "red" : "green" }}
+            >
+              {item.text}
+            </Text>
+          ))}
+        </View>
       )}
-      {message?.length > 0 && <View></View>}
     </View>
   );
 };

@@ -8,6 +8,7 @@ import { getFirestore, setDoc, doc } from "firebase/firestore";
 import { store } from "../../store/store";
 import { login, logout } from "../../store/authSlice";
 import { removeToken, saveToken } from "../../utils/storage";
+import { CustomError } from "../../utils/errors";
 
 const db = getFirestore();
 
@@ -23,28 +24,36 @@ export const registerUser = async (
     );
     const user = userCredential.user;
 
-    const token = await user.getIdToken();
-    await saveToken(token);
+    if (user) {
+      const token = await user.getIdToken();
+      await saveToken(token);
 
-    await setDoc(doc(db, "users", user.uid), {
-      uid: user.uid,
-      email: user.email,
-      createdAt: new Date(),
-    });
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        email: user.email,
+        createdAt: new Date(),
+      });
 
-    store.dispatch(
-      login({ user: { email: user.email!, uid: user.uid }, token }),
+      store.dispatch(
+        login({ user: { email: user.email!, uid: user.uid }, token }),
+      );
+    }
+  } catch (error: any) {
+    console.log(
+      { type: "error", text: "Error al registro de usuario" },
+      error.message,
     );
-  } catch (error) {
-    console.log("Error al registro de usuario", error);
-    throw error;
+    throw {
+      type: "error",
+      message: "No se pudo registrar el usuario, inténtelo de nuevo",
+    };
   }
 };
 
 export const loginUser = async (
   email: string,
   password: string,
-): Promise<void> => {
+): Promise<{ token: string; uid: string; email: string }> => {
   try {
     const userCredential = await signInWithEmailAndPassword(
       auth,
@@ -53,15 +62,25 @@ export const loginUser = async (
     );
     const user = userCredential.user;
 
-    const token = await user.getIdToken();
-    await saveToken(token);
+    if (user) {
+      const token = await user.getIdToken();
+      const uid = user.uid;
 
-    store.dispatch(
-      login({ user: { email: user.email!, uid: user.uid }, token }),
-    );
-  } catch (error) {
+      await saveToken(token);
+
+      return { token, uid, email: user.email ?? "" };
+    }
+    throw new CustomError("error", "Usuario no encontrado");
+  } catch (error: any) {
     console.log("Problemas al iniciar sesión", error);
-    throw error;
+    if (error.code === "auth/invalid-credential") {
+      throw new CustomError("error", "Revise el correo y la contraseña");
+    } else {
+      throw new CustomError(
+        "error",
+        "Ha habido algún problema. No se pudo iniciar sesión.",
+      );
+    }
   }
 };
 
@@ -71,8 +90,11 @@ export const logOut = async (): Promise<void> => {
     await removeToken();
 
     store.dispatch(logout());
-  } catch (error) {
-    console.log("Error al hacer sign out", error);
-    throw error;
+  } catch (error: any) {
+    console.log("Error al hacer sign out", error.message);
+    throw new CustomError(
+      "error",
+      "No se pudo cerrar la sesión. Inténtelo de nuevo",
+    );
   }
 };

@@ -16,3 +16,10 @@ export interface Book {
   created_at: Timestamp;
   updated_at: Timestamp;
 }
+
+export type MessageType = "success" | "error";
+
+export interface Message {
+  type: MessageType;
+  text: string;
+}

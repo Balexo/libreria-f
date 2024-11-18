@@ -7,6 +7,8 @@ import {
   FlatList,
   ActivityIndicator,
   StyleSheet,
+  Image,
+  RefreshControl,
 } from "react-native";
 import { useQuery } from "react-query";
 
@@ -20,7 +22,13 @@ const Books: React.FC = () => {
     isLoading,
     isError,
     error,
+    refetch,
+    isFetching,
   } = useQuery<Book[], QueryError>("books", getBooks);
+
+  const handleRefresh = () => {
+    refetch();
+  };
 
   if (isLoading) {
     return <ActivityIndicator size="large" color="#0000ff" />;
@@ -43,13 +51,26 @@ const Books: React.FC = () => {
       ) : (
         <FlatList
           data={books}
+          numColumns={2}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <View style={styles.bookItem}>
               <Text style={styles.title}>{item.title}</Text>
-              <Text style={styles.author}>Autor: {item.author}</Text>
+              {item.cover_image ? (
+                <Image
+                  style={styles.image}
+                  source={{ uri: item.cover_image }}
+                ></Image>
+              ) : (
+                <Text>No hay imagen</Text>
+              )}
             </View>
           )}
+          contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl refreshing={isFetching} onRefresh={handleRefresh} />
+          }
+          showsVerticalScrollIndicator={false}
         />
       )}
     </View>
@@ -73,8 +94,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   bookItem: {
-    marginBottom: 16,
-    padding: 12,
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    margin: 10,
+    padding: 10,
     backgroundColor: "#f9f9f9",
     borderRadius: 8,
   },
@@ -85,5 +109,12 @@ const styles = StyleSheet.create({
   author: {
     fontSize: 14,
     color: "#666",
+  },
+  image: {
+    height: 100,
+    width: 80,
+  },
+  listContent: {
+    paddingBottom: 20,
   },
 });
