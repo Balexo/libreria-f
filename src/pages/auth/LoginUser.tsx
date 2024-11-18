@@ -15,7 +15,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import { login } from "../../store/authSlice";
 import { Message } from "../../utils/types";
-import { CustomError } from "../../utils/errors";
+import { checkFields } from "../../utils/validations";
 
 type NavigationProp = StackNavigationProp<RootStackParamList, "Login">;
 type RouteParams = RouteProp<RootStackParamList, keyof RootStackParamList>;
@@ -37,14 +37,6 @@ const Login: React.FC<Props> = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteParams>();
   const dispatch = useDispatch();
-
-  const checkFields = () => {
-    if (email.trim() && password.trim()) {
-      SetLoginDisabled(false);
-    } else {
-      SetLoginDisabled(true);
-    }
-  };
 
   const handleSignup = async (): Promise<void> => {
     setMessage([]);
@@ -69,7 +61,7 @@ const Login: React.FC<Props> = () => {
   };
 
   useEffect(() => {
-    checkFields();
+    SetLoginDisabled(!checkFields(email, password));
   }, [email, password]);
 
   return (
